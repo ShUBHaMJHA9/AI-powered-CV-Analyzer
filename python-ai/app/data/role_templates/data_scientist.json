@@ -1,0 +1,6 @@
+{
+  "required_skills": ["python", "machine learning", "deep learning", "tensorflow", "pytorch", "scikit-learn", "pandas", "numpy", "sql", "statistics", "data visualization"],
+  "bonus_skills": ["spark", "hadoop", "mlflow", "airflow", "docker", "aws", "gcp", "azure", "r", "tableau", "power bi"],
+  "min_experience_level": "Junior",
+  "keywords": ["data scientist", "model", "accuracy", "training", "prediction", "feature engineering", "ml pipeline"]
+}

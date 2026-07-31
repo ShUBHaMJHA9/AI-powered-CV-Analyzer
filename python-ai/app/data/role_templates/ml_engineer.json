@@ -1,0 +1,6 @@
+{
+  "required_skills": ["python", "pytorch", "tensorflow", "keras", "numpy", "pandas", "scikit-learn", "nlp", "computer vision", "model deployment", "mlops"],
+  "bonus_skills": ["docker", "kubernetes", "aws sagemaker", "vertex ai", "mlflow", "onnx", "cuda", "transformers", "huggingface"],
+  "min_experience_level": "Mid-Level",
+  "keywords": ["ml engineer", "model training", "inference", "production", "pipeline", "gpu", "optimization"]
+}

@@ -1,0 +1,6 @@
+{
+  "required_skills": ["javascript", "typescript", "react", "html", "css", "rest api", "git"],
+  "bonus_skills": ["nextjs", "vue", "angular", "webpack", "vite", "tailwind", "testing", "figma", "performance optimization"],
+  "min_experience_level": "Junior",
+  "keywords": ["frontend", "ui", "component", "responsive", "accessibility"]
+}

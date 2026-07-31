@@ -1,0 +1,6 @@
+{
+  "required_skills": ["python", "java", "node.js", "sql", "rest api", "git", "databases", "microservices"],
+  "bonus_skills": ["docker", "kubernetes", "aws", "redis", "kafka", "graphql", "grpc", "spring boot", "fastapi", "django"],
+  "min_experience_level": "Junior",
+  "keywords": ["backend", "api", "server", "database", "scalable", "performance"]
+}

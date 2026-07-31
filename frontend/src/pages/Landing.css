@@ -1,0 +1,103 @@
+.landing { overflow-x: hidden; }
+
+/* Hero */
+.hero {
+  min-height: 84vh;
+  display: flex; align-items: center;
+  position: relative;
+  padding: 60px 0 40px;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background: var(--grad-hero);
+  pointer-events: none;
+}
+.hero-content { text-align: center; max-width: 860px; margin: 0 auto; }
+.hero-badge { margin-bottom: 20px; }
+.hero-title {
+  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 800; line-height: 1.1;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.hero-subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: var(--text-secondary); max-width: 680px; margin: 0 auto 36px;
+  line-height: 1.65; font-weight: 500;
+}
+.hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+.role-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.role-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-right: 4px; }
+.role-pill {
+  padding: 5px 14px; border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  font-size: 0.83rem; font-weight: 600; color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.role-pill:hover { color: var(--primary); border-color: var(--primary); background: #EEF2FF; }
+
+/* Stats */
+.stats-section { padding: 48px 0; background: #FFFFFF; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.stat-card { text-align: center; }
+.stat-value { font-size: 2.6rem; font-weight: 800; font-family: var(--font-heading); }
+.stat-label { font-size: 0.95rem; font-weight: 700; margin: 4px 0 2px; color: var(--text-primary); }
+.stat-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+
+/* How It Works */
+.hiw-section { padding: 88px 0; }
+.section-header { margin-bottom: 56px; }
+.section-header h2 { font-size: 2.4rem; font-weight: 800; }
+.mb-3 { margin-bottom: 12px; }
+.hiw-steps { display: flex; align-items: flex-start; gap: 0; position: relative; }
+.hiw-step {
+  flex: 1; text-align: center; padding: 0 20px;
+  position: relative;
+}
+.hiw-number {
+  font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em;
+  color: var(--text-muted); margin-bottom: 12px;
+}
+.hiw-icon {
+  font-size: 2.4rem; margin-bottom: 14px;
+}
+.hiw-step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+.hiw-step p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; }
+.hiw-arrow {
+  position: absolute; top: 36px; right: -10px; z-index: 1;
+  font-size: 1.4rem; color: var(--primary); opacity: 0.4;
+}
+
+/* Features */
+.features-section { padding: 88px 0; background: #FFFFFF; border-top: 1px solid var(--border); }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature-card { padding: 28px; background: #F8FAFC; border: 1.5px solid var(--border); }
+.feature-icon { font-size: 2rem; margin-bottom: 14px; }
+.feature-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+.feature-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; }
+
+/* CTA */
+.cta-section { padding: 80px 0; }
+.cta-card {
+  text-align: center; padding: 64px 36px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+.cta-card h2 { font-size: 2.4rem; margin-bottom: 12px; font-weight: 800; }
+.cta-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.05rem; }
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .hiw-steps { flex-direction: column; gap: 32px; }
+  .hiw-arrow { display: none; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .features-grid { grid-template-columns: 1fr; }
+}

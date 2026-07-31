@@ -1,0 +1,6 @@
+{
+  "required_skills": ["javascript", "react", "node.js", "sql", "mongodb", "rest api", "git", "html", "css"],
+  "bonus_skills": ["typescript", "nextjs", "docker", "aws", "graphql", "redis", "postgresql"],
+  "min_experience_level": "Junior",
+  "keywords": ["full stack", "mern", "mean", "end-to-end", "frontend", "backend"]
+}

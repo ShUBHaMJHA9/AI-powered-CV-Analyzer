@@ -1,0 +1,78 @@
+.analyze-page { padding: 48px 0 80px; }
+.analyze-header { text-align: center; margin-bottom: 32px; }
+.analyze-header h1 { font-size: 2.6rem; margin-bottom: 8px; font-weight: 800; }
+
+.steps-container { max-width: 600px; margin: 0 auto 36px; }
+.step-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+.step-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-align: center; flex: 1; transition: var(--transition); }
+.step-label.active { color: var(--primary); }
+
+.analyze-card { max-width: 760px; margin: 0 auto; padding: 40px; }
+.step-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+.step-desc { color: var(--text-secondary); margin-bottom: 28px; font-size: 0.95rem; }
+.step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+/* Dropzone */
+.dropzone.has-file { border-color: var(--success); background: #F0FDF4; }
+.file-preview-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px; background: #FFFFFF;
+  border-radius: var(--radius-md); border: 1.5px solid #A7F3D0;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+.file-icon-box { font-size: 2.2rem; }
+.file-info { flex: 1; }
+.file-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); margin-bottom: 2px; }
+.file-meta { font-size: 0.82rem; color: var(--text-secondary); }
+.file-actions { display: flex; align-items: center; gap: 12px; }
+.dropzone-body { padding: 12px 0; }
+.dropzone-icon { font-size: 3rem; margin-bottom: 12px; }
+.format-pills { display: flex; gap: 8px; justify-content: center; }
+
+/* Error message */
+.error-msg {
+  background: #FEF2F2; border: 1.5px solid #FECACA; color: #B91C1C;
+  padding: 12px 16px; border-radius: var(--radius-md);
+  margin-top: 20px; font-size: 0.9rem; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Role Grid */
+.role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }
+.role-option {
+  padding: 16px; border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: #F8FAFC;
+  color: var(--text-secondary); font-size: 0.92rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  text-align: left; position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.role-option:hover { border-color: var(--primary-light); color: var(--primary); background: #EEF2FF; }
+.role-option.selected { border-color: var(--primary); color: var(--primary); background: #EEF2FF; box-shadow: 0 0 0 2px rgba(79,70,229,0.15); }
+.role-check { font-weight: 800; color: var(--primary); }
+
+/* Integrations */
+.integration-box { border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; background: #F8FAFC; }
+.integration-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+.integration-icon { font-size: 2rem; }
+.integration-head h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+
+/* Review */
+.review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+.review-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: #F8FAFC; border-radius: var(--radius-md); border: 1.5px solid var(--border); }
+.review-icon { font-size: 1.8rem; }
+.review-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+.review-val { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+.models-box { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 16px; background: #FFFFFF; }
+.model-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.model-row:last-child { border-bottom: none; }
+.model-name { font-weight: 700; font-size: 0.9rem; flex: 1; }
+.model-pts { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; }
+
+@media (max-width: 768px) {
+  .role-grid { grid-template-columns: 1fr 1fr; }
+  .review-grid { grid-template-columns: 1fr; }
+  .analyze-card { padding: 24px; }
+}

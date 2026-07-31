@@ -1,0 +1,10 @@
+{
+  "programming_languages": ["python", "javascript", "typescript", "java", "c++", "c#", "go", "rust", "kotlin", "swift", "r", "matlab", "scala", "php", "ruby", "dart", "julia"],
+  "frameworks": ["react", "angular", "vue", "nextjs", "fastapi", "flask", "django", "express", "spring boot", "laravel", "rails", "flutter", "react native", "tensorflow", "pytorch", "keras", "sklearn", "scikit-learn", "huggingface", "langchain"],
+  "data_science": ["machine learning", "deep learning", "nlp", "natural language processing", "computer vision", "data science", "statistics", "reinforcement learning", "time series", "forecasting", "clustering", "classification", "regression", "neural network", "transformer", "bert", "gpt", "llm"],
+  "data_analysis": ["pandas", "numpy", "matplotlib", "seaborn", "plotly", "scipy", "excel", "tableau", "power bi", "looker", "data analysis", "data visualization", "business intelligence", "bi", "etl", "data pipeline"],
+  "databases": ["sql", "postgresql", "mysql", "sqlite", "mongodb", "redis", "cassandra", "dynamodb", "elasticsearch", "firebase", "supabase", "oracle", "nosql", "neo4j", "influxdb"],
+  "cloud": ["aws", "azure", "gcp", "google cloud", "ec2", "s3", "lambda", "cloudformation", "terraform", "kubernetes", "docker", "ci/cd", "devops", "mlops", "sagemaker", "vertex ai", "azure ml"],
+  "tools": ["git", "github", "gitlab", "bitbucket", "jira", "confluence", "slack", "linux", "bash", "powershell", "jupyter", "vscode", "postman", "figma", "swagger", "rest api", "graphql", "microservices"],
+  "soft_skills": ["leadership", "communication", "teamwork", "problem solving", "agile", "scrum", "kanban", "project management", "mentoring", "collaboration", "critical thinking"]
+}

@@ -1,0 +1,173 @@
+/* ============================================================
+   SMARRTIF AI – Footer Styling
+   ============================================================ */
+
+.site-footer {
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding: 50px 0 24px;
+  margin-top: auto;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.02);
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 1.2fr;
+  gap: 40px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.footer-logo {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0F172A;
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.footer-tagline {
+  font-size: 0.9rem;
+  color: #64748B;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  max-width: 340px;
+}
+
+.made-by-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.heart-icon {
+  color: #EF4444;
+  display: inline-block;
+  animation: pulseHeart 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseHeart {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+.author-name {
+  color: #4F46E5;
+  font-weight: 800;
+}
+
+.footer-col-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  font-size: 0.9rem;
+  color: #64748B;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #4F46E5;
+  transform: translateX(3px);
+}
+
+.contact-details-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+.contact-icon {
+  font-size: 1.2rem;
+}
+
+.contact-lbl {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94A3B8;
+}
+
+.contact-val {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.contact-email-link {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #4F46E5;
+  transition: all 0.2s ease;
+}
+
+.contact-email-link:hover {
+  text-decoration: underline;
+  color: #3730A3;
+}
+
+/* Footer Bottom Bar */
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  font-size: 0.85rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.footer-credit-line span {
+  color: #4F46E5;
+  font-weight: 700;
+}
+
+.footer-credit-line a {
+  color: #0EA5E9;
+  font-weight: 700;
+}
+
+.footer-credit-line a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 850px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}

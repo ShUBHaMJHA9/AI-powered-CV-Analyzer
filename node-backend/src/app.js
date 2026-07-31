@@ -1,0 +1,128 @@
+const express = require('express')
+const cors = require('cors')
+const multer = require('multer')
+const axios = require('axios')
+const path = require('path')
+const fs = require('fs')
+require('dotenv').config()
+
+const app = express()
+const PORT = process.env.PORT || 5000
+const AI_SERVICE = process.env.AI_SERVICE_URL || 'http://localhost:8000'
+
+// ── Middleware ────────────────────────────────────────────────
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// ── File Upload (Multer) ──────────────────────────────────────
+const uploadDir = path.join(__dirname, '../uploads')
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
+
+const storage = multer.diskStorage({
+  destination: uploadDir,
+  filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+})
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_, file, cb) => {
+    const allowed = ['.pdf', '.docx', '.doc']
+    const ext = path.extname(file.originalname).toLowerCase()
+    if (allowed.includes(ext)) cb(null, true)
+    else cb(new Error('Only PDF and DOCX files are allowed'))
+  }
+})
+
+// ── Routes ────────────────────────────────────────────────────
+
+// Health check
+app.get('/health', (_, res) => res.json({
+  status: 'ok',
+  service: 'CV Analyzer Node Backend',
+  author: 'Shubham Kumar Jha',
+  credit: 'Made with ❤️ by Shubham Kumar Jha',
+  contact_email: 'shubhamjha22088@gmail.com'
+}))
+
+// Quick parse endpoint (extracts raw text & auto-detects GitHub + LinkedIn URLs)
+app.post('/api/parse-cv', upload.single('cv'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'CV file is required' })
+
+    const FormData = require('form-data')
+    const form = new FormData()
+    form.append('cv', fs.createReadStream(req.file.path), { filename: req.file.originalname })
+
+    const { data } = await axios.post(`${AI_SERVICE}/parse-cv`, form, {
+      headers: form.getHeaders(),
+      timeout: 30000
+    })
+
+    fs.unlink(req.file.path, () => {})
+    return res.json(data)
+  } catch (err) {
+    if (req.file) fs.unlink(req.file.path, () => {})
+    const msg = err.response?.data?.detail || err.message || 'Quick parse failed'
+    return res.status(500).json({ error: msg })
+  }
+})
+
+// Main analysis endpoint
+app.post('/api/analyze', upload.single('cv'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'CV file is required' })
+
+    const { target_role = 'data_scientist', github_username, linkedin_data } = req.body
+
+    const FormData = require('form-data')
+    const form = new FormData()
+    form.append('cv', fs.createReadStream(req.file.path), { filename: req.file.originalname })
+    form.append('target_role', target_role)
+    if (github_username) form.append('github_username', github_username)
+    if (linkedin_data) form.append('linkedin_data', linkedin_data)
+
+    const { data } = await axios.post(`${AI_SERVICE}/analyze`, form, {
+      headers: form.getHeaders(),
+      timeout: 120000 // 2 min timeout
+    })
+
+    fs.unlink(req.file.path, () => {})
+    return res.json(data)
+  } catch (err) {
+    console.error('[/api/analyze]', err.message)
+    if (req.file) fs.unlink(req.file.path, () => {})
+    const msg = err.response?.data?.detail || err.message || 'Analysis failed'
+    return res.status(500).json({ error: msg })
+  }
+})
+
+// GitHub standalone endpoint
+app.get('/api/github/:username', async (req, res) => {
+  try {
+    const { data } = await axios.get(`${AI_SERVICE}/github/${req.params.username}`, { timeout: 15000 })
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ error: err.response?.data?.detail || 'GitHub fetch failed' })
+  }
+})
+
+// LinkedIn standalone endpoint
+app.get('/api/linkedin', async (req, res) => {
+  try {
+    const { url } = req.query
+    const { data } = await axios.get(`${AI_SERVICE}/linkedin?url=${encodeURIComponent(url)}`, { timeout: 15000 })
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ error: err.response?.data?.detail || 'LinkedIn fetch failed' })
+  }
+})
+
+// ── Error Handler ─────────────────────────────────────────────
+app.use((err, _req, res, _next) => {
+  console.error(err)
+  res.status(500).json({ error: err.message || 'Internal server error' })
+})
+
+app.listen(PORT, () => console.log(`✅ Node backend running on http://localhost:${PORT}`))
