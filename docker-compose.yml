@@ -47,7 +47,7 @@ services:
     container_name: smarrtif_frontend
     restart: always
     ports:
-      - "80:80"
+      - "3000:80"
     depends_on:
       - node-backend
     networks:
