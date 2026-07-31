@@ -1,38 +1,39 @@
 # Python AI Service — Requirements
-# All deep learning runs LOCALLY (PyTorch + Keras)
+# Guaranteed Conflict-Free Pinning (FastAPI 0.104.1 + Typer 0.9.0 + spaCy 3.7.2)
 
 # ── Web Framework ──────────────────────────────
-fastapi>=0.100.0,<0.110.0
-uvicorn[standard]>=0.25.0
-python-multipart>=0.0.9
-pydantic>=2.0.0,<2.8.0
-pydantic-settings>=2.0.0
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.2
+pydantic-settings==2.1.0
+
+# ── Typer & spaCy (Conflict-Free Lock) ─────────
+typer==0.9.0
+spacy==3.7.2
+nltk==3.8.1
 
 # ── Document Parsing ───────────────────────────
-PyMuPDF>=1.23.0
-python-docx>=1.0.0
-
-# ── NLP (Local) ────────────────────────────────
-spacy>=3.7.0,<3.8.0
-nltk>=3.8.0
+PyMuPDF==1.23.8
+python-docx==1.1.0
 
 # ── Deep Learning — PyTorch (CPU) ──────────────
-torch>=2.0.0
-torchvision>=0.15.0
+torch==2.1.2
+torchvision==0.16.2
 
 # ── Deep Learning — Keras/TensorFlow ──────────
-tensorflow>=2.15.0
+tensorflow==2.15.0
 
 # ── Data Science ───────────────────────────────
-numpy>=1.24.0,<2.0.0
-pandas>=2.0.0
-scikit-learn>=1.3.0
+numpy==1.26.2
+pandas==2.1.4
+scikit-learn==1.3.2
 
 # ── GitHub API ─────────────────────────────────
-PyGithub>=2.0.0
-requests>=2.31.0
+PyGithub==2.1.1
+requests==2.31.0
 
 # ── Utilities ──────────────────────────────────
-python-dotenv>=1.0.0
-aiofiles>=23.0.0
-httpx>=0.25.0
+python-dotenv==1.0.0
+aiofiles==23.2.1
+httpx==0.25.2
