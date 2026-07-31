@@ -61,13 +61,22 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
+  const getApiUrl = (endpoint: string) => {
+    const raw = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
+    const pathStr = endpoint.replace(/^\//, '')
+    if (raw.endsWith('/api') && pathStr.startsWith('api/')) {
+      return `${raw}/${pathStr.substring(4)}`
+    }
+    return `${raw}/${pathStr}`
+  }
+
   const quickParseCv = async (f: File) => {
     setParsingCv(true)
     try {
       const formData = new FormData()
       formData.append('cv', f)
-      const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const { data } = await axios.post(`${API}/api/parse-cv`, formData, {
+      const targetUrl = getApiUrl('/api/parse-cv')
+      const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
@@ -124,8 +133,8 @@ export default function Analyze() {
       }
       formData.append('linkedin_data', JSON.stringify(finalLinkedinData))
 
-      const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-      const { data } = await axios.post(`${API}/api/analyze`, formData, {
+      const targetUrl = getApiUrl('/api/analyze')
+      const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       localStorage.setItem('cv_result', JSON.stringify(data))

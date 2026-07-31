@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 5000
 async function checkAiServiceConnection() {
   const candidates = [
     process.env.AI_SERVICE_URL,
+    'http://smarrtif_python_ai:8000',
     'http://python-ai:8000',
     'http://127.0.0.1:8081',
     'http://127.0.0.1:8000',
@@ -29,7 +30,7 @@ async function checkAiServiceConnection() {
       // probe next candidate
     }
   }
-  return { connected: false, url: process.env.AI_SERVICE_URL || 'http://python-ai:8000', data: null }
+  return { connected: false, url: process.env.AI_SERVICE_URL || 'http://smarrtif_python_ai:8000', data: null }
 }
 
 async function getAiServiceUrl() {
@@ -65,7 +66,7 @@ const upload = multer({
 // ── Routes ────────────────────────────────────────────────────
 
 // Health check endpoint
-app.get('/health', async (_, res) => {
+app.get(['/health', '/api/health'], async (_, res) => {
   const aiStatus = await checkAiServiceConnection()
   res.json({
     status: 'ok',
@@ -82,7 +83,7 @@ app.get('/health', async (_, res) => {
 })
 
 // Quick parse endpoint
-app.post('/api/parse-cv', upload.single('cv'), async (req, res) => {
+app.post(['/api/parse-cv', '/parse-cv'], upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
@@ -106,7 +107,7 @@ app.post('/api/parse-cv', upload.single('cv'), async (req, res) => {
 })
 
 // Main analysis endpoint
-app.post('/api/analyze', upload.single('cv'), async (req, res) => {
+app.post(['/api/analyze', '/analyze'], upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
