@@ -9,10 +9,7 @@ RUN npm ci
 
 COPY . .
 
-# Build Vite production dist
-ARG VITE_API_URL=/api
-ENV VITE_API_URL=$VITE_API_URL
-
+# Build Vite production dist (no VITE_API_URL needed — nginx.conf proxies /api/ to node-backend)
 RUN npx vite build
 
 # Stage 2: Serve static files with Nginx
