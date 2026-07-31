@@ -19,7 +19,7 @@ EXPOSE 5000
 # Set environment defaults
 ENV PORT=5000
 ENV NODE_ENV=production
-ENV AI_SERVICE_URL=http://python-ai:8000
+ENV AI_SERVICE_URL=http://smarrtif_python_ai:8000
 
 # Run Express server
 CMD ["node", "src/app.js"]

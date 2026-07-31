@@ -97,10 +97,10 @@ app.post(['/api/parse-cv', '/parse-cv'], upload.single('cv'), async (req, res) =
       timeout: 30000
     })
 
-    fs.unlink(req.file.path, () => {})
+    fs.unlink(req.file.path, () => { })
     return res.json(data)
   } catch (err) {
-    if (req.file) fs.unlink(req.file.path, () => {})
+    if (req.file) fs.unlink(req.file.path, () => { })
     const msg = err.response?.data?.detail || err.message || 'Quick parse failed'
     return res.status(500).json({ error: msg })
   }
@@ -126,11 +126,11 @@ app.post(['/api/analyze', '/analyze'], upload.single('cv'), async (req, res) => 
       timeout: 120000 // 2 min timeout
     })
 
-    fs.unlink(req.file.path, () => {})
+    fs.unlink(req.file.path, () => { })
     return res.json(data)
   } catch (err) {
     console.error('[/api/analyze]', err.message)
-    if (req.file) fs.unlink(req.file.path, () => {})
+    if (req.file) fs.unlink(req.file.path, () => { })
     const msg = err.response?.data?.detail || err.message || 'Analysis failed'
     return res.status(500).json({ error: msg })
   }
