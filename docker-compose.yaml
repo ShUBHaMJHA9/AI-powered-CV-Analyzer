@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. Python AI Microservice (PyTorch + Keras + spaCy)
   python-ai:
