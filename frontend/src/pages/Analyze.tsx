@@ -61,19 +61,12 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
-  // Relative path — frontend nginx proxies /api/ → smarrtif_node_backend:5000/api/ (Docker internal)
-  const getApiUrl = (endpoint: string) => {
-    const clean = endpoint.replace(/^\//, '').replace(/^api\//, '')
-    return `/api/${clean}`
-  }
-
   const quickParseCv = async (f: File) => {
     setParsingCv(true)
     try {
       const formData = new FormData()
       formData.append('cv', f)
-      const targetUrl = getApiUrl('/api/parse-cv')
-      const { data } = await axios.post(targetUrl, formData, {
+      const { data } = await axios.post('/api/parse-cv', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
@@ -130,8 +123,7 @@ export default function Analyze() {
       }
       formData.append('linkedin_data', JSON.stringify(finalLinkedinData))
 
-      const targetUrl = getApiUrl('/api/analyze')
-      const { data } = await axios.post(targetUrl, formData, {
+      const { data } = await axios.post('/api/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       localStorage.setItem('cv_result', JSON.stringify(data))
