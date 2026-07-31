@@ -61,12 +61,10 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
-  // VITE_API_URL = https://airesume.uk.to (baked at build time via docker-compose)
-  // Browser calls: https://airesume.uk.to/api/parse-cv → VPS nginx → node-backend:5000
+  // Relative path — frontend nginx proxies /api/ → smarrtif_node_backend:5000/api/ (Docker internal)
   const getApiUrl = (endpoint: string) => {
-    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
     const clean = endpoint.replace(/^\//, '').replace(/^api\//, '')
-    return `${base}/api/${clean}`
+    return `/api/${clean}`
   }
 
   const quickParseCv = async (f: File) => {

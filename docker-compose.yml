@@ -22,12 +22,11 @@ services:
       - python-ai
 
   # 3. React Frontend (Serving on Port 3000)
+  # frontend nginx.conf proxies /api/ → smarrtif_node_backend:5000/api/ (Docker internal network)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=https://airesume.uk.to
     container_name: smarrtif_frontend
     restart: always
     ports:
