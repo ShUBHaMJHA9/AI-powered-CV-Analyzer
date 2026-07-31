@@ -3,26 +3,15 @@ version: '3.8'
 services:
   # 1. Python AI Microservice (PyTorch + Keras + spaCy)
   python-ai:
-    build:
-      context: ./python-ai
-      dockerfile: Dockerfile
+    build: ./python-ai
     container_name: smarrtif_python_ai
     restart: always
     ports:
       - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-    networks:
-      - smarrtif_network
 
   # 2. Node.js API Gateway (Express + Multer)
   node-backend:
-    build:
-      context: ./node-backend
-      dockerfile: Dockerfile
+    build: ./node-backend
     container_name: smarrtif_node_backend
     restart: always
     environment:
@@ -32,12 +21,9 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      python-ai:
-        condition: service_healthy
-    networks:
-      - smarrtif_network
+      - python-ai
 
-  # 3. React Frontend (Vite + Nginx)
+  # 3. React Frontend (Serving on Port 3000)
   frontend:
     build:
       context: ./frontend
@@ -50,9 +36,3 @@ services:
       - "3000:80"
     depends_on:
       - node-backend
-    networks:
-      - smarrtif_network
-
-networks:
-  smarrtif_network:
-    driver: bridge
