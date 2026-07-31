@@ -9,8 +9,8 @@ require('dotenv').config()
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// ── Dynamic Auto-Discovery for Python AI Service ─────────────────
-async function getAiServiceUrl() {
+// ── Dynamic Auto-Discovery & Health Check for Python AI Service ─
+async function checkAiServiceConnection() {
   const candidates = [
     process.env.AI_SERVICE_URL,
     'http://python-ai:8000',
@@ -21,13 +21,20 @@ async function getAiServiceUrl() {
 
   for (const url of candidates) {
     try {
-      await axios.get(`${url}/health`, { timeout: 1200 })
-      return url
+      const res = await axios.get(`${url}/health`, { timeout: 1500 })
+      if (res.status === 200) {
+        return { connected: true, url, data: res.data }
+      }
     } catch (e) {
-      // continue auto-probing candidates
+      // probe next candidate
     }
   }
-  return process.env.AI_SERVICE_URL || 'http://python-ai:8000'
+  return { connected: false, url: process.env.AI_SERVICE_URL || 'http://python-ai:8000', data: null }
+}
+
+async function getAiServiceUrl() {
+  const info = await checkAiServiceConnection()
+  return info.url
 }
 
 // ── Middleware ────────────────────────────────────────────────
@@ -57,20 +64,24 @@ const upload = multer({
 
 // ── Routes ────────────────────────────────────────────────────
 
-// Health check
+// Health check endpoint
 app.get('/health', async (_, res) => {
-  const activeAiUrl = await getAiServiceUrl()
+  const aiStatus = await checkAiServiceConnection()
   res.json({
     status: 'ok',
     service: 'CV Analyzer Node Backend',
-    ai_service_connected: activeAiUrl,
+    ai_service: {
+      connected: aiStatus.connected,
+      url: aiStatus.url,
+      status: aiStatus.connected ? 'ready' : 'unreachable'
+    },
     author: 'Shubham Kumar Jha',
     credit: 'Made with ❤️ by Shubham Kumar Jha',
     contact_email: 'shubhamjha22088@gmail.com'
   })
 })
 
-// Quick parse endpoint (extracts raw text & auto-detects GitHub + LinkedIn URLs)
+// Quick parse endpoint
 app.post('/api/parse-cv', upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
@@ -154,7 +165,11 @@ app.use((err, _req, res, _next) => {
 })
 
 app.listen(PORT, async () => {
-  console.log(`✅ Node backend running on http://localhost:${PORT}`)
-  const aiUrl = await getAiServiceUrl()
-  console.log(`🔗 Connected to Python AI Service at: ${aiUrl}`)
+  console.log(`✅ [NODE BACKEND] Running on http://localhost:${PORT}`)
+  const aiStatus = await checkAiServiceConnection()
+  if (aiStatus.connected) {
+    console.log(`🟢 [AI CONNECTED] Successfully connected to Python AI Engine at ${aiStatus.url}`)
+  } else {
+    console.log(`🔴 [AI WARNING] Unreachable Python AI Engine on launch (${aiStatus.url}). Will auto-probe on requests!`)
+  }
 })
