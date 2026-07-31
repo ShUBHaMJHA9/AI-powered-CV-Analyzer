@@ -5,7 +5,7 @@ services:
     container_name: smarrtif_python_ai
     restart: always
     ports:
-      - "8000:8000"
+      - "8081:8000"
 
   # 2. Node.js API Gateway (Express + Multer)
   node-backend:
