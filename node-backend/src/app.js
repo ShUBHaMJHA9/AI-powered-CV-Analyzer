@@ -8,7 +8,27 @@ require('dotenv').config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
-const AI_SERVICE = process.env.AI_SERVICE_URL || 'http://localhost:8000'
+
+// ── Dynamic Auto-Discovery for Python AI Service ─────────────────
+async function getAiServiceUrl() {
+  const candidates = [
+    process.env.AI_SERVICE_URL,
+    'http://python-ai:8000',
+    'http://127.0.0.1:8081',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000'
+  ].filter(Boolean)
+
+  for (const url of candidates) {
+    try {
+      await axios.get(`${url}/health`, { timeout: 1200 })
+      return url
+    } catch (e) {
+      // continue auto-probing candidates
+    }
+  }
+  return process.env.AI_SERVICE_URL || 'http://python-ai:8000'
+}
 
 // ── Middleware ────────────────────────────────────────────────
 app.use(cors())
@@ -38,24 +58,29 @@ const upload = multer({
 // ── Routes ────────────────────────────────────────────────────
 
 // Health check
-app.get('/health', (_, res) => res.json({
-  status: 'ok',
-  service: 'CV Analyzer Node Backend',
-  author: 'Shubham Kumar Jha',
-  credit: 'Made with ❤️ by Shubham Kumar Jha',
-  contact_email: 'shubhamjha22088@gmail.com'
-}))
+app.get('/health', async (_, res) => {
+  const activeAiUrl = await getAiServiceUrl()
+  res.json({
+    status: 'ok',
+    service: 'CV Analyzer Node Backend',
+    ai_service_connected: activeAiUrl,
+    author: 'Shubham Kumar Jha',
+    credit: 'Made with ❤️ by Shubham Kumar Jha',
+    contact_email: 'shubhamjha22088@gmail.com'
+  })
+})
 
 // Quick parse endpoint (extracts raw text & auto-detects GitHub + LinkedIn URLs)
 app.post('/api/parse-cv', upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
+    const aiUrl = await getAiServiceUrl()
     const FormData = require('form-data')
     const form = new FormData()
     form.append('cv', fs.createReadStream(req.file.path), { filename: req.file.originalname })
 
-    const { data } = await axios.post(`${AI_SERVICE}/parse-cv`, form, {
+    const { data } = await axios.post(`${aiUrl}/parse-cv`, form, {
       headers: form.getHeaders(),
       timeout: 30000
     })
@@ -75,6 +100,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
     const { target_role = 'data_scientist', github_username, linkedin_data } = req.body
+    const aiUrl = await getAiServiceUrl()
 
     const FormData = require('form-data')
     const form = new FormData()
@@ -83,7 +109,7 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
     if (github_username) form.append('github_username', github_username)
     if (linkedin_data) form.append('linkedin_data', linkedin_data)
 
-    const { data } = await axios.post(`${AI_SERVICE}/analyze`, form, {
+    const { data } = await axios.post(`${aiUrl}/analyze`, form, {
       headers: form.getHeaders(),
       timeout: 120000 // 2 min timeout
     })
@@ -101,7 +127,8 @@ app.post('/api/analyze', upload.single('cv'), async (req, res) => {
 // GitHub standalone endpoint
 app.get('/api/github/:username', async (req, res) => {
   try {
-    const { data } = await axios.get(`${AI_SERVICE}/github/${req.params.username}`, { timeout: 15000 })
+    const aiUrl = await getAiServiceUrl()
+    const { data } = await axios.get(`${aiUrl}/github/${req.params.username}`, { timeout: 15000 })
     res.json(data)
   } catch (err) {
     res.status(500).json({ error: err.response?.data?.detail || 'GitHub fetch failed' })
@@ -112,7 +139,8 @@ app.get('/api/github/:username', async (req, res) => {
 app.get('/api/linkedin', async (req, res) => {
   try {
     const { url } = req.query
-    const { data } = await axios.get(`${AI_SERVICE}/linkedin?url=${encodeURIComponent(url)}`, { timeout: 15000 })
+    const aiUrl = await getAiServiceUrl()
+    const { data } = await axios.get(`${aiUrl}/linkedin?url=${encodeURIComponent(url)}`, { timeout: 15000 })
     res.json(data)
   } catch (err) {
     res.status(500).json({ error: err.response?.data?.detail || 'LinkedIn fetch failed' })
@@ -125,4 +153,8 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Internal server error' })
 })
 
-app.listen(PORT, () => console.log(`✅ Node backend running on http://localhost:${PORT}`))
+app.listen(PORT, async () => {
+  console.log(`✅ Node backend running on http://localhost:${PORT}`)
+  const aiUrl = await getAiServiceUrl()
+  console.log(`🔗 Connected to Python AI Service at: ${aiUrl}`)
+})
