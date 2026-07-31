@@ -83,7 +83,7 @@ app.get(['/health', '/api/health'], async (_, res) => {
 })
 
 // Quick parse endpoint
-app.post(['/api/parse-cv', '/parse-cv'], upload.single('cv'), async (req, res) => {
+app.post(['/api/parse-cv', '/parse-cv', '/api/api/parse-cv'], upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
@@ -107,7 +107,7 @@ app.post(['/api/parse-cv', '/parse-cv'], upload.single('cv'), async (req, res) =
 })
 
 // Main analysis endpoint
-app.post(['/api/analyze', '/analyze'], upload.single('cv'), async (req, res) => {
+app.post(['/api/analyze', '/analyze', '/api/api/analyze'], upload.single('cv'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'CV file is required' })
 
