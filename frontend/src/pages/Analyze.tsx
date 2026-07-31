@@ -62,12 +62,21 @@ export default function Analyze() {
   }
 
   const getApiUrl = (endpoint: string) => {
-    const raw = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
-    const pathStr = endpoint.replace(/^\//, '')
-    if (raw.endsWith('/api') && pathStr.startsWith('api/')) {
-      return `${raw}/${pathStr.substring(4)}`
+    let base = import.meta.env.VITE_API_URL
+    if (!base && typeof window !== 'undefined') {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        base = '/api'
+      } else {
+        base = 'http://localhost:5000'
+      }
     }
-    return `${raw}/${pathStr}`
+    if (!base) base = '/api'
+    base = base.replace(/\/$/, '')
+    const cleanEp = endpoint.replace(/^\//, '').replace(/^api\//, '')
+    if (base.endsWith('/api')) {
+      return `${base}/${cleanEp}`
+    }
+    return `${base}/api/${cleanEp}`
   }
 
   const quickParseCv = async (f: File) => {
