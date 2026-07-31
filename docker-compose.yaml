@@ -15,18 +15,19 @@ services:
     environment:
       - PORT=5000
       - NODE_ENV=production
-      - AI_SERVICE_URL=http://smarrtif_python_ai:8000
+      - AI_SERVICE_URL=http://python-ai:8000
     ports:
       - "5000:5000"
     depends_on:
       - python-ai
 
   # 3. React Frontend (Serving on Port 3000)
-  # VITE_API_URL is NOT passed as build arg — frontend nginx.conf proxies /api/ to node-backend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=https://airesume.uk.to
     container_name: smarrtif_frontend
     restart: always
     ports:

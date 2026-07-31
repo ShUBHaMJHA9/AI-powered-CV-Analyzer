@@ -61,11 +61,12 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
-  // Always use relative /api/ path - proxied by frontend Nginx in production
-  // and by Vite devServer proxy in local dev
+  // VITE_API_URL = https://airesume.uk.to (baked at build time via docker-compose)
+  // Browser calls: https://airesume.uk.to/api/parse-cv → VPS nginx → node-backend:5000
   const getApiUrl = (endpoint: string) => {
+    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
     const clean = endpoint.replace(/^\//, '').replace(/^api\//, '')
-    return `/api/${clean}`
+    return `${base}/api/${clean}`
   }
 
   const quickParseCv = async (f: File) => {
