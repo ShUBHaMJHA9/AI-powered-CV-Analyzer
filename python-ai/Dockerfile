@@ -1,4 +1,4 @@
-# ── Python AI Microservice Dockerfile ────────────────────────────
+# ── Python AI Microservice Dockerfile (CPU Lightweight) ─────────
 FROM python:3.10-slim
 
 # Prevent Python from writing .pyc files & buffer stdout/stderr
@@ -14,7 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python requirements
+# Install PyTorch CPU-only first (Saves 2.5GB disk space!)
+RUN pip install --no-cache-dir torch==2.1.2 torchvision==0.16.2 --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining Python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

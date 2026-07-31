@@ -1,5 +1,5 @@
 # Python AI Service — Requirements
-# Guaranteed Conflict-Free Pinning (FastAPI 0.104.1 + Typer 0.9.0 + spaCy 3.7.2)
+# PyTorch CPU version is installed separately in Dockerfile to save 2.5GB disk space
 
 # ── Web Framework ──────────────────────────────
 fastapi==0.104.1
@@ -17,12 +17,8 @@ nltk==3.8.1
 PyMuPDF==1.23.8
 python-docx==1.1.0
 
-# ── Deep Learning — PyTorch (CPU) ──────────────
-torch==2.1.2
-torchvision==0.16.2
-
 # ── Deep Learning — Keras/TensorFlow ──────────
-tensorflow==2.15.0
+tensorflow-cpu==2.15.0
 
 # ── Data Science ───────────────────────────────
 numpy==1.26.2
