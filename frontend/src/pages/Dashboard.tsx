@@ -71,7 +71,8 @@ export default function Dashboard() {
   const present = dimensions.skill_match?.skills_present || []
   const missing = skill_gaps || dimensions.skill_match?.skills_missing || []
 
-  const gradeColor = { 'A+': '#10B981', 'A': '#10B981', 'B+': '#0EA5E9', 'B': '#F59E0B', 'C': '#F59E0B', 'D': '#EF4444' }[grade] || '#4F46E5'
+  const gradeColors: Record<string, string> = { 'A+': '#10B981', 'A': '#10B981', 'B+': '#0EA5E9', 'B': '#F59E0B', 'C': '#F59E0B', 'D': '#EF4444' }
+  const gradeColor = gradeColors[String(grade)] || '#4F46E5'
 
   return (
     <div className="dashboard-page">
@@ -223,7 +224,7 @@ export default function Dashboard() {
                           <div key={lang} className="lang-legend-item">
                             <span className="lang-dot" style={{ background: COLORS[idx % COLORS.length] }} />
                             <span className="lang-name">{lang}</span>
-                            <span className="lang-pct">{pct}%</span>
+                            <span className="lang-pct">{String(pct)}%</span>
                           </div>
                         ))}
                       </div>
