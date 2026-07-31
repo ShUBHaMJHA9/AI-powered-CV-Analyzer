@@ -61,12 +61,19 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
+  const getApiUrl = (endpoint: string) => {
+    const base = (import.meta.env.VITE_API_URL || 'https://airesume.codetechfoundation.tech').replace(/\/$/, '')
+    const cleanEp = endpoint.replace(/^\//, '').replace(/^api\//, '')
+    return `${base}/api/${cleanEp}`
+  }
+
   const quickParseCv = async (f: File) => {
     setParsingCv(true)
     try {
       const formData = new FormData()
       formData.append('cv', f)
-      const { data } = await axios.post('/api/parse-cv', formData, {
+      const targetUrl = getApiUrl('/api/parse-cv')
+      const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
 
@@ -123,7 +130,8 @@ export default function Analyze() {
       }
       formData.append('linkedin_data', JSON.stringify(finalLinkedinData))
 
-      const { data } = await axios.post('/api/analyze', formData, {
+      const targetUrl = getApiUrl('/api/analyze')
+      const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       localStorage.setItem('cv_result', JSON.stringify(data))
