@@ -15,7 +15,7 @@ services:
     environment:
       - PORT=5000
       - NODE_ENV=production
-      - AI_SERVICE_URL=http://python-ai:8000
+      - AI_SERVICE_URL=http://smarrtif_python_ai:8000
     ports:
       - "5000:5000"
     depends_on:
