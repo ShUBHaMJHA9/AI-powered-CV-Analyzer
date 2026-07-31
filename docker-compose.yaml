@@ -22,12 +22,11 @@ services:
       - python-ai
 
   # 3. React Frontend (Serving on Port 3000)
+  # VITE_API_URL is NOT passed as build arg — frontend nginx.conf proxies /api/ to node-backend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=/api
     container_name: smarrtif_frontend
     restart: always
     ports:
