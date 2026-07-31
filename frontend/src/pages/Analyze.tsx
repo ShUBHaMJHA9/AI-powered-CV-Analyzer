@@ -61,22 +61,11 @@ export default function Analyze() {
     quickParseCv(f)
   }
 
+  // Always use relative /api/ path - proxied by frontend Nginx in production
+  // and by Vite devServer proxy in local dev
   const getApiUrl = (endpoint: string) => {
-    let base = import.meta.env.VITE_API_URL
-    if (!base && typeof window !== 'undefined') {
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        base = '/api'
-      } else {
-        base = 'http://localhost:5000'
-      }
-    }
-    if (!base) base = '/api'
-    base = base.replace(/\/$/, '')
-    const cleanEp = endpoint.replace(/^\//, '').replace(/^api\//, '')
-    if (base.endsWith('/api')) {
-      return `${base}/${cleanEp}`
-    }
-    return `${base}/api/${cleanEp}`
+    const clean = endpoint.replace(/^\//, '').replace(/^api\//, '')
+    return `/api/${clean}`
   }
 
   const quickParseCv = async (f: File) => {
