@@ -43,6 +43,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request, call_next):
+    print(f"🐍 [PYTHON AI] {request.method} {request.url.path}")
+    response = await call_next(request)
+    return response
+
 DATA_DIR = BASE_DIR / "data"
 
 # ── Lazy imports for heavy ML engines ──────────────────────────

@@ -62,7 +62,10 @@ export default function Analyze() {
   }
 
   const getApiUrl = (endpoint: string) => {
-    const base = (import.meta.env.VITE_API_URL || 'https://airesume.codetechfoundation.tech').replace(/\/$/, '')
+    let base = (import.meta.env.VITE_API_URL || 'https://airesume.codetechfoundation.tech').trim().replace(/\/$/, '')
+    if (base.endsWith('/api')) {
+      base = base.slice(0, -4)
+    }
     const cleanEp = endpoint.replace(/^\//, '').replace(/^api\//, '')
     return `${base}/api/${cleanEp}`
   }
@@ -73,6 +76,7 @@ export default function Analyze() {
       const formData = new FormData()
       formData.append('cv', f)
       const targetUrl = getApiUrl('/api/parse-cv')
+      console.log('🚀 [FRONTEND REQ] Posting quick parse to:', targetUrl)
       const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
@@ -131,6 +135,7 @@ export default function Analyze() {
       formData.append('linkedin_data', JSON.stringify(finalLinkedinData))
 
       const targetUrl = getApiUrl('/api/analyze')
+      console.log('🚀 [FRONTEND REQ] Posting full analysis to:', targetUrl)
       const { data } = await axios.post(targetUrl, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })

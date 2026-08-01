@@ -9,7 +9,10 @@ RUN npm ci
 
 COPY . .
 
-# Build Vite production dist (no VITE_API_URL needed — nginx.conf proxies /api/ to node-backend)
+# Pass Backend domain target to Vite build
+ARG VITE_API_URL=https://airesume.codetechfoundation.tech
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npx vite build
 
 # Stage 2: Serve static files with Nginx

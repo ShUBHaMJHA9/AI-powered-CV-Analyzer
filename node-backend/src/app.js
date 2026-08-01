@@ -38,10 +38,32 @@ async function getAiServiceUrl() {
   return info.url
 }
 
-// ── Middleware ────────────────────────────────────────────────
+// ── TOP-LEVEL LOGGING MIDDLEWARE ───────────────────────────────
+app.use((req, res, next) => {
+  const start = Date.now()
+  console.log(`\n========================================`)
+  console.log(`📥 [NODE BACKEND RECEIVED] ${req.method} ${req.originalUrl} | IP: ${req.ip} | Time: ${new Date().toISOString()}`)
+  console.log(`========================================`)
+
+  res.on('finish', () => {
+    const duration = Date.now() - start
+    console.log(`📤 [NODE BACKEND RESPONDED] ${req.method} ${req.originalUrl} -> Status: ${res.statusCode} (${duration}ms)\n`)
+  })
+
+  next()
+})
+
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+// URL Normalization Middleware (converts legacy /api/api/* calls to /api/*)
+app.use((req, _res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/')
+  }
+  next()
+})
 
 // ── File Upload (Multer) ──────────────────────────────────────
 const uploadDir = path.join(__dirname, '../uploads')
@@ -66,7 +88,7 @@ const upload = multer({
 // ── Routes ────────────────────────────────────────────────────
 
 // Health check endpoint
-app.get(['/health', '/api/health'], async (_, res) => {
+app.get(['/health', '/api/health', '/api/api/health'], async (_, res) => {
   const aiStatus = await checkAiServiceConnection()
   res.json({
     status: 'ok',
@@ -137,7 +159,7 @@ app.post(['/api/analyze', '/analyze', '/api/api/analyze'], upload.single('cv'), 
 })
 
 // GitHub standalone endpoint
-app.get('/api/github/:username', async (req, res) => {
+app.get(['/api/github/:username', '/github/:username', '/api/api/github/:username'], async (req, res) => {
   try {
     const aiUrl = await getAiServiceUrl()
     const { data } = await axios.get(`${aiUrl}/github/${req.params.username}`, { timeout: 15000 })
@@ -148,7 +170,7 @@ app.get('/api/github/:username', async (req, res) => {
 })
 
 // LinkedIn standalone endpoint
-app.get('/api/linkedin', async (req, res) => {
+app.get(['/api/linkedin', '/linkedin', '/api/api/linkedin'], async (req, res) => {
   try {
     const { url } = req.query
     const aiUrl = await getAiServiceUrl()
