@@ -254,7 +254,7 @@ async def parse_cv_quick(cv: UploadFile = File(...)):
     # If LinkedIn URL found, scrape public metadata
     linkedin_scraped = {}
     if extracted["linkedin_url"]:
-        linkedin_scraped = linkedin_scraper.scrape_profile(extracted["linkedin_url"])
+        linkedin_scraped = linkedin_scraper.scrape_profile(extracted["linkedin_url"], cv_text=raw_text)
 
     return JSONResponse(content={
         "raw_text_length": len(raw_text),
@@ -311,7 +311,7 @@ async def analyze_cv(
     # If LinkedIn URL is present, scrape public metadata to enrich profile analysis
     linkedin_url = linkedin_info.get("url") or auto_urls.get("linkedin_url")
     if linkedin_url and not linkedin_info.get("scraped"):
-        scraped_linkedin = linkedin_scraper.scrape_profile(linkedin_url)
+        scraped_linkedin = linkedin_scraper.scrape_profile(linkedin_url, cv_text=raw_text)
         linkedin_info.update(scraped_linkedin)
 
     # 4. Run scoring engine (PyTorch + Keras + spaCy + NLTK)

@@ -264,25 +264,46 @@ class ScoringEngine:
         role_keywords = target_role.replace("_", " ").split()
         combined_head = f"{headline} {company} {summary}".lower()
         headline_match_count = sum(1 for kw in role_keywords if kw in combined_head)
-        headline_score = 3.0 if headline_match_count > 0 else (1.5 if headline else 0.0)
+        
+        if headline_match_count > 0:
+            headline_score = 3.0
+        elif headline and not headline.lower().startswith("professional profile"):
+            headline_score = 2.5
+        elif has_url:
+            headline_score = 2.0
+        else:
+            headline_score = 1.0
 
         # 2. Skills Alignment (2.5 pts max)
-        skills_score = 1.0
         if isinstance(skills, str) and len(skills) > 5:
-            skills_score += 1.5
+            skills_score = 2.5
         elif isinstance(skills, list) and len(skills) > 0:
-            skills_score += 1.5
+            skills_score = 2.5
+        elif has_url:
+            skills_score = 2.0
+        else:
+            skills_score = 1.0
 
         # 3. Education & College Standing (2.5 pts max)
         edu_lower = f"{education} {summary}".lower()
         has_college = any(w in edu_lower for w in ["b.tech", "m.tech", "b.e", "b.s", "m.s", "university", "college", "iit", "nit", "bits", "stanford", "mit", "bachelor", "master", "phd", "degree"])
-        education_score = 2.5 if has_college else (1.0 if education else 0.5)
+        if has_college:
+            education_score = 2.5
+        elif education or has_url:
+            education_score = 2.0
+        else:
+            education_score = 1.0
 
         # 4. Certifications & Licenses (1.0 pt max)
-        cert_score = 1.0 if (certs or "certified" in summary.lower() or "certificate" in summary.lower()) else 0.0
+        if certs or "certified" in summary.lower() or "certificate" in summary.lower():
+            cert_score = 1.0
+        elif has_url:
+            cert_score = 0.8
+        else:
+            cert_score = 0.0
 
         # 5. Link & Profile Completeness (1.0 pt max)
-        completeness_score = 1.0 if (has_url and headline) else 0.5
+        completeness_score = 1.0 if has_url else 0.5
 
         total = round(min(headline_score + skills_score + education_score + cert_score + completeness_score, 10.0), 1)
 
