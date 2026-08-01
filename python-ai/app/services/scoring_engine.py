@@ -1,12 +1,13 @@
 """
 Scoring Engine — Master Orchestrator
-Combines all 5 DL model outputs into the final transparent score.
+Combines PyTorch & Keras DL model outputs with dynamic role-aware NLP logic.
 Coordinates: CVScoringNet + SkillMatcherNet + ATSClassifier + ExperienceDetector + GitHub
 """
 
 import torch
 import numpy as np
 import json
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -39,14 +40,14 @@ def _load_ats_keywords() -> list:
 
 class ScoringEngine:
     """
-    Master scoring engine that orchestrates all DL models.
+    Master scoring engine that orchestrates DL models & dynamic role evaluation.
     
     Score breakdown (100 pts total):
-      CV Quality         30 pts  ← CVScoringNet (PyTorch FFNN)
-      Skill Match        25 pts  ← SkillMatcherNet (PyTorch Siamese BiLSTM)
-      ATS Compatibility  15 pts  ← ATSClassifierModel (Keras BiLSTM)
-      Experience Level   20 pts  ← ExperienceLevelDetector (Keras LSTM)
-      GitHub Profile     10 pts  ← Rule-based (PyGithub)
+      CV Quality         30 pts  ← Dynamic structure, depth & metrics
+      Skill Match        25 pts  ← Role-aware required/bonus skill matcher
+      ATS Compatibility  15 pts  ← Role ATS keyword overlap & section checks
+      Experience Level   20 pts  ← Experience detector & requirement check
+      GitHub Profile     10 pts  ← Repos, stars, followers & tech diversity
     """
 
     def __init__(self):
@@ -94,88 +95,138 @@ class ScoringEngine:
         return torch.tensor([tokens], dtype=torch.long).to(DEVICE)
 
     def score_cv_quality(self, nlp_analysis: dict, raw_text: str) -> dict:
-        """Score CV quality using CVScoringNet (PyTorch FFNN)."""
+        """Score CV quality dynamically based on structure, depth, and quantified achievements."""
         features = feature_extractor.extract(nlp_analysis, raw_text)
         result = self.cv_scorer.predict_with_breakdown(features)
-        score_30 = round(result["overall"] * 0.30, 2)  # scale to 30 pts
+
+        word_count = len(raw_text.split())
+        has_metrics = bool(re.search(r"\b\d+%\b|\$\d+|\b\d+\s*(?:users|clients|projects|repos|stars|requests|ms|seconds|x|hrs|hours)\b", raw_text, re.IGNORECASE))
+
+        depth_score = min(word_count / 350.0, 1.0) * 10.0
+        structure_score = (10.0 if result["overall"] > 50 else 7.0)
+        metrics_score = 10.0 if has_metrics else 5.0
+
+        total_quality = round(depth_score + structure_score + metrics_score, 1)
+        score_30 = round(min(total_quality, 30.0), 1)
 
         return {
-            "raw_score": result["overall"],
+            "raw_score": total_quality,
             "weighted_score": score_30,
             "max_points": 30,
             "breakdown": result["breakdown"],
             "feature_importance": feature_extractor.get_feature_importance(features).head(5).to_dict("records")
         }
 
-    def score_skill_match(self, user_skills: list, target_role: str) -> dict:
-        """Score skill alignment using SkillMatcherNet (PyTorch Siamese BiLSTM)."""
+    def score_skill_match(self, user_skills: list, target_role: str, raw_text: str = "") -> dict:
+        """Score skill alignment dynamically against target role template."""
         template = self.role_templates.get(target_role, {})
         required_skills = template.get("required_skills", [])
         bonus_skills = template.get("bonus_skills", [])
 
-        user_skill_text = " ".join(user_skills)
-        required_text = " ".join(required_skills)
-        bonus_text = " ".join(bonus_skills)
+        combined_text = ((" ".join(user_skills)) + " " + raw_text).lower()
 
-        # Encode and compute similarity
-        user_enc = self._tokenize_skills(user_skill_text)
-        req_enc = self._tokenize_skills(required_text)
-        bonus_enc = self._tokenize_skills(bonus_text)
+        present_required = []
+        missing_required = []
+        for req in required_skills:
+            pattern = r"\b" + re.escape(req.lower()) + r"\b"
+            if re.search(pattern, combined_text):
+                present_required.append(req)
+            else:
+                missing_required.append(req)
 
-        with torch.no_grad():
-            req_similarity = self.skill_matcher(user_enc, req_enc).item()
-            bonus_similarity = self.skill_matcher(user_enc, bonus_enc).item()
+        present_bonus = []
+        for bon in bonus_skills:
+            pattern = r"\b" + re.escape(bon.lower()) + r"\b"
+            if re.search(pattern, combined_text):
+                present_bonus.append(bon)
 
-        # Weighted: required 70%, bonus 30%
-        combined = req_similarity * 0.7 + bonus_similarity * 0.3
-        score_25 = round(combined * 25, 2)
+        req_ratio = len(present_required) / max(len(required_skills), 1)
+        bonus_ratio = len(present_bonus) / max(len(bonus_skills), 1)
 
-        # Find present/missing skills
-        user_lower = [s.lower() for s in user_skills]
-        present = [s for s in required_skills if s.lower() in user_lower]
-        missing = [s for s in required_skills if s.lower() not in user_lower]
+        combined = req_ratio * 0.8 + bonus_ratio * 0.2
+        score_25 = round(combined * 25.0, 1)
 
         return {
             "raw_similarity": round(combined, 4),
             "weighted_score": score_25,
             "max_points": 25,
-            "required_similarity": round(req_similarity, 4),
-            "bonus_similarity": round(bonus_similarity, 4),
-            "skills_present": present,
-            "skills_missing": missing[:10],
+            "skills_present": list(set(present_required + present_bonus)),
+            "skills_missing": missing_required,
             "match_percentage": round(combined * 100, 1)
         }
 
-    def score_ats(self, raw_text: str) -> dict:
-        """Score ATS compatibility using ATSClassifierModel (Keras BiLSTM)."""
-        result = self.ats_classifier.predict(raw_text)
-        score_15 = round(result["ats_probability"] * 15, 2)
-        result["weighted_score"] = score_15
-        result["max_points"] = 15
-        return result
+    def score_ats(self, raw_text: str, target_role: str = "") -> dict:
+        """Score ATS compatibility dynamically based on role & structural indicators."""
+        template = self.role_templates.get(target_role, {})
+        role_keywords = template.get("keywords", []) + template.get("required_skills", [])
+        if not role_keywords:
+            role_keywords = self.ats_keywords
+
+        text_lower = raw_text.lower()
+        matched = [kw for kw in role_keywords if re.search(r"\b" + re.escape(kw.lower()) + r"\b", text_lower)]
+        missing = [kw for kw in role_keywords if kw not in matched]
+
+        keyword_ratio = len(matched) / max(len(role_keywords), 1)
+
+        has_email = bool(re.search(r"[\w\.-]+@[\w\.-]+\.\w+", raw_text))
+        has_phone = bool(re.search(r"\+?\d[\d\s-]{8,}\d", raw_text))
+        has_sections = sum(1 for sec in ["experience", "education", "skills", "projects"] if sec in text_lower) >= 2
+
+        struct_score = (0.4 if has_email else 0) + (0.3 if has_phone else 0) + (0.3 if has_sections else 0)
+        ats_score_pct = round((keyword_ratio * 0.7 + struct_score * 0.3) * 100, 1)
+        score_15 = round((ats_score_pct / 100) * 15.0, 1)
+
+        return {
+            "ats_score": ats_score_pct,
+            "ats_probability": round(ats_score_pct / 100, 2),
+            "weighted_score": score_15,
+            "max_points": 15,
+            "keywords_matched": list(set(matched)),
+            "keywords_missing": list(set(missing))[:10]
+        }
 
     def score_experience(self, exp_text: str, target_role: str) -> dict:
-        """Score experience using ExperienceLevelDetector (Keras LSTM) + NLP."""
+        """Score experience dynamically based on detected years and target role requirements."""
         detected = self.exp_detector.predict(exp_text)
         template = self.role_templates.get(target_role, {})
         required_level = template.get("min_experience_level", "Junior")
 
+        years_found = re.findall(r"\b(20\d\d)\b", exp_text)
+        detected_years = detected.get("detected_years", 0)
+        if len(years_found) >= 2:
+            try:
+                sorted_years = sorted([int(y) for y in years_found])
+                detected_years = max(detected_years, sorted_years[-1] - sorted_years[0])
+            except Exception:
+                pass
+
+        if detected_years >= 5:
+            level = "Senior"
+            detected_idx = 3
+        elif detected_years >= 3:
+            level = "Mid-Level"
+            detected_idx = 2
+        elif detected_years >= 1:
+            level = "Junior"
+            detected_idx = 1
+        else:
+            level = "Fresher"
+            detected_idx = 0
+
         level_map = {"Fresher": 0, "Junior": 1, "Mid-Level": 2, "Senior": 3}
-        detected_idx = detected["level_index"]
         required_idx = level_map.get(required_level, 1)
 
-        # Score based on match: perfect match = full points, under = penalized
         if detected_idx >= required_idx:
             score_factor = 1.0
         else:
-            score_factor = max(0, 1.0 - (required_idx - detected_idx) * 0.35)
+            score_factor = max(0.4, 1.0 - (required_idx - detected_idx) * 0.3)
 
-        score_20 = round(score_factor * 20, 2)
+        score_20 = round(score_factor * 20.0, 1)
 
         return {
-            "detected_level": detected["level"],
+            "detected_level": level,
             "required_level": required_level,
-            "detected_years": detected.get("detected_years"),
+            "detected_years": detected_years,
             "confidence": detected["confidence"],
             "weighted_score": score_20,
             "max_points": 20,
@@ -193,7 +244,6 @@ class ScoringEngine:
                 "breakdown": {"repos": 0, "stars": 0, "followers": 0, "language_diversity": 0}
             }
 
-        # If already calculated with breakdown by main handler
         if "weighted_score" in github_data and "breakdown" in github_data:
             return {
                 "weighted_score": github_data["weighted_score"],
@@ -260,11 +310,10 @@ class ScoringEngine:
 
         has_url = bool(url and "linkedin.com" in url.lower())
 
-        # 1. Headline & Role Alignment (3.0 pts max)
         role_keywords = target_role.replace("_", " ").split()
         combined_head = f"{headline} {company} {summary}".lower()
         headline_match_count = sum(1 for kw in role_keywords if kw in combined_head)
-        
+
         if headline_match_count > 0:
             headline_score = 3.0
         elif headline and not headline.lower().startswith("professional profile"):
@@ -274,7 +323,6 @@ class ScoringEngine:
         else:
             headline_score = 1.0
 
-        # 2. Skills Alignment (2.5 pts max)
         if isinstance(skills, str) and len(skills) > 5:
             skills_score = 2.5
         elif isinstance(skills, list) and len(skills) > 0:
@@ -284,7 +332,6 @@ class ScoringEngine:
         else:
             skills_score = 1.0
 
-        # 3. Education & College Standing (2.5 pts max)
         edu_lower = f"{education} {summary}".lower()
         has_college = any(w in edu_lower for w in ["b.tech", "m.tech", "b.e", "b.s", "m.s", "university", "college", "iit", "nit", "bits", "stanford", "mit", "bachelor", "master", "phd", "degree"])
         if has_college:
@@ -294,7 +341,6 @@ class ScoringEngine:
         else:
             education_score = 1.0
 
-        # 4. Certifications & Licenses (1.0 pt max)
         if certs or "certified" in summary.lower() or "certificate" in summary.lower():
             cert_score = 1.0
         elif has_url:
@@ -302,7 +348,6 @@ class ScoringEngine:
         else:
             cert_score = 0.0
 
-        # 5. Link & Profile Completeness (1.0 pt max)
         completeness_score = 1.0 if has_url else 0.5
 
         total = round(min(headline_score + skills_score + education_score + cert_score + completeness_score, 10.0), 1)
@@ -338,20 +383,17 @@ class ScoringEngine:
         Master scoring function — runs all scoring dimensions.
         Returns complete, explainable score report.
         """
-        # 1. NLP Analysis
         nlp_analysis = nlp_engine.full_analysis(raw_text)
         user_skills = nlp_analysis["skills"]["all_skills"]
-        exp_text = raw_text
 
-        # 2. Run all scoring dimensions
+        # Run all scoring dimensions with raw_text context
         cv_result = self.score_cv_quality(nlp_analysis, raw_text)
-        skill_result = self.score_skill_match(user_skills, target_role)
-        ats_result = self.score_ats(raw_text)
-        exp_result = self.score_experience(exp_text, target_role)
+        skill_result = self.score_skill_match(user_skills, target_role, raw_text=raw_text)
+        ats_result = self.score_ats(raw_text, target_role=target_role)
+        exp_result = self.score_experience(raw_text, target_role=target_role)
         github_result = self.score_github(github_data)
         linkedin_result = self.score_linkedin(linkedin_data, target_role)
 
-        # 3. Total score (scaled out of 100)
         raw_total = (
             cv_result["weighted_score"] +
             skill_result["weighted_score"] +
@@ -361,7 +403,6 @@ class ScoringEngine:
         )
         total = round(min(raw_total, 100.0), 1)
 
-        # 4. Grade
         if total >= 85:   grade = "A+"
         elif total >= 75: grade = "A"
         elif total >= 65: grade = "B+"
@@ -385,6 +426,7 @@ class ScoringEngine:
             "github_data": github_data if (github_data and not github_data.get("error")) else None,
             "github_languages": github_data.get("top_languages", {}) if github_data else {},
             "linkedin_data": linkedin_result,
+            "skills_matched": skill_result["skills_present"],
             "skill_gaps": skill_result["skills_missing"],
             "top_recommendations": self._generate_recommendations(
                 total, skill_result, ats_result, cv_result, exp_result
@@ -392,33 +434,33 @@ class ScoringEngine:
         }
 
     def _generate_recommendations(self, total, skill_result, ats_result, cv_result, exp_result) -> list:
-        """Generate prioritized improvement recommendations."""
+        """Generate dynamic, prioritized improvement recommendations."""
         recs = []
 
-        if skill_result["weighted_score"] < 15:
-            missing = skill_result["skills_missing"][:3]
+        if skill_result["skills_missing"]:
+            missing = skill_result["skills_missing"][:4]
             recs.append({
                 "priority": 1, "type": "skills",
-                "action": f"Add missing skills: {', '.join(missing)}",
+                "action": f"Add essential role skills to CV: {', '.join(missing)}",
                 "impact": "High"
             })
-        if ats_result["ats_score"] < 60:
-            missing_kws = ats_result.get("keywords_missing", [])[:3]
+        if ats_result["keywords_missing"]:
+            missing_kws = ats_result["keywords_missing"][:4]
             recs.append({
                 "priority": 2, "type": "ats",
-                "action": f"Include ATS keywords: {', '.join(missing_kws)}",
+                "action": f"Include target ATS keywords: {', '.join(missing_kws)}",
                 "impact": "High"
             })
-        if cv_result["weighted_score"] < 18:
+        if cv_result["weighted_score"] < 22:
             recs.append({
                 "priority": 3, "type": "cv_quality",
-                "action": "Add quantified achievements (numbers, %, metrics) to experience bullets",
+                "action": "Add quantified achievements (numbers, %, metrics) to experience & project bullets",
                 "impact": "Medium"
             })
         if not exp_result["level_match"]:
             recs.append({
                 "priority": 4, "type": "experience",
-                "action": f"This role requires {exp_result['required_level']} experience. Highlight relevant projects.",
+                "action": f"This role requires {exp_result['required_level']} level ({exp_result['detected_years']} yrs detected). Highlight relevant project experience.",
                 "impact": "Medium"
             })
 
