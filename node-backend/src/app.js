@@ -11,18 +11,20 @@ const PORT = process.env.PORT || 5000
 
 // ── Dynamic Auto-Discovery & Health Check for Python AI Service ─
 async function checkAiServiceConnection() {
-  const candidates = [
+  const candidates = Array.from(new Set([
     process.env.AI_SERVICE_URL,
     'http://smarrtif_python_ai:8000',
     'http://python-ai:8000',
+    'http://host.docker.internal:8081',
     'http://127.0.0.1:8081',
     'http://127.0.0.1:8000',
-    'http://localhost:8000'
-  ].filter(Boolean)
+    'http://localhost:8000',
+    'http://localhost:8081'
+  ].filter(Boolean)))
 
   for (const url of candidates) {
     try {
-      const res = await axios.get(`${url}/health`, { timeout: 1500 })
+      const res = await axios.get(`${url}/health`, { timeout: 5000 })
       if (res.status === 200) {
         return { connected: true, url, data: res.data }
       }
